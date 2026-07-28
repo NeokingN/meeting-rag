@@ -1,0 +1,72 @@
+server:
+  port: 8081
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+
+logging:
+  charset:
+    console: UTF-8
+
+spring:
+  # ===== 数据库连接（PGVector需要PostgreSQL 14+ 并安装pgvector扩展）=====
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/meeting_rag}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  ai:
+    # ===== Chat模型（DeepSeek，用于生成回答）=====
+    openai:
+      api-key: ${OPENAI_API_KEY:sk-1fd2723140334d399a93df80644c689d}
+      base-url: ${OPENAI_BASE_URL:https://api.deepseek.com}
+      embedding:
+        enabled: false
+      chat:
+        options:
+          model: ${OPENAI_MODEL:deepseek-v4-flash}
+          temperature: 0.5
+          max-tokens: 2048
+
+    # ===== Embedding模型（Ollama本地，免费）=====
+    # 可选：用通义 text-embedding-v3 替代，改下面配置即可
+    ollama:
+      base-url: ${OLLAMA_URL:http://localhost:11434}
+      chat:
+        enabled: false
+      embedding:
+        options:
+          model: ${EMBEDDING_MODEL:nomic-embed-text}
+
+    # ===== Vector Store 配置 =====
+    vectorstore:
+      pgvector:
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 768   # nomic-embed-text 是768维；如用bge-m3改为1024
+        max-document-batch-size: 100
+
+# ===== 自定义业务配置 =====
+meeting:
+  rag:
+    chunk:
+      size: 500          # 每段500字符
+      overlap: 80        # 重叠80字符，避免截断语义
+    retrieval:
+      top-k: 5           # 召回Top5相关片段
+      score-threshold: 0.3  # 相似度低于此值丢弃
+    cache:
+      enabled: true
+      ttl: 3600          # 缓存1小时
+
+# ===== Actuator监控 =====
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
