@@ -1,4 +1,4 @@
-# 会议知识库 RAG - Phase 2
+# 会议知识库 RAG 
 
 > Spring AI + PGVector + DeepSeek → 上传会议纪要 → 语义检索 → AI问答（带引用溯源）
 
